@@ -1,0 +1,43 @@
+{
+  "configurations": [
+    {
+      "name": "ESP32",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${workspaceFolder}/.pio/libdeps/esp32dev/**",
+        "C:/Users/ADMIN/.platformio/packages/framework-arduinoespressif32/libraries/**",
+        "C:/Users/ADMIN/.platformio/packages/framework-arduinoespressif32/cores/esp32/**",
+        "C:/Users/ADMIN/.platformio/packages/framework-arduinoespressif32/variants/esp32/**",
+        "C:/Users/ADMIN/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/**",
+        "C:/Users/ADMIN/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/include/**",
+        "C:/Users/ADMIN/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/include/c++/12.2.0/**"
+      ],
+      "browse": {
+        "path": [
+          "${workspaceFolder}/.pio/libdeps/esp32dev/**",
+          "C:/Users/ADMIN/.platformio/packages/framework-arduinoespressif32/libraries/**",
+          "C:/Users/ADMIN/.platformio/packages/framework-arduinoespressif32/cores/esp32/**",
+          "C:/Users/ADMIN/.platformio/packages/framework-arduinoespressif32/variants/esp32/**"
+        ],
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "defines": [
+        "ESP32",
+        "ESP_PLATFORM",
+        "ARDUINO",
+        "ARDUINO_ESP32_DEV",
+        "F_CPU=240000000L",
+        "HAVE_CONFIG_H",
+        "PLATFORMIO=60115",
+        "TFT_eSPI",
+        "USER_SETUP_LOADED=1",
+        "ILI9341_DRIVER=1"
+      ],
+      "compilerPath": "C:/Users/ADMIN/.platformio/packages/toolchain-xtensa-esp32/bin/xtensa-esp32-elf-gcc.exe",
+      "cStandard": "c17",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "gcc-x64"
+    }
+  ],
+  "version": 4
+}
