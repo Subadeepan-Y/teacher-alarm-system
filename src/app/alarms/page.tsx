@@ -10,14 +10,19 @@ export default function AlarmsPage() {
   const [attendance, setAttendance] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    fetch('/api/attendance')
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setAttendance(new Set(data.map((a: any) => a.period_time)))
-        }
-      })
-      .catch(() => {})
+    const load = () => {
+      fetch('/api/attendance', { cache: 'no-store' })
+        .then((r) => r.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setAttendance(new Set(data.map((a: any) => a.period_time)))
+          }
+        })
+        .catch(() => {})
+    }
+    load()
+    const t = setInterval(load, 15000)
+    return () => clearInterval(t)
   }, [])
 
   function getSubject(periodTime: string) {
