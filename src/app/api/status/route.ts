@@ -1,27 +1,37 @@
 import { NextResponse } from 'next/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { SECONDARY_PERIODS, PRIMARY_PERIODS, DAY_NAMES } from '@/lib/periods'
+import { applyDailyOverrides, schoolDate, SCHOOL_TZ } from '@/lib/daily-overrides'
 
-// The ESP32 polls this endpoint. Without these three lines Next/Vercel is free
+// The ESP32 polls this endpoint. Without these four lines Next/Vercel is free
 // to cache the GET response, which is one reason edits "never showed up".
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 export const fetchCache = 'force-no-store'
 
-const TZ = 'Asia/Kolkata'
+const TZ = SCHOOL_TZ
 
 /**
- * Service-role read. The old version used the cookie-based auth client, which
- * has no session when the request comes from the ESP32, so the device could
- * silently read nothing while the browser read fine.
+ * Service-role read. The cookie-based auth client has no session when the
+ * request comes from the ESP32, so the device would silently read nothing
+ * while the browser read fine.
+ *
+ * NOTE: `daily_schedules` is RLS-protected per user. If SUPABASE_SERVICE_ROLE_KEY
+ * is not set we fall back to the anon key, which can read `slots` (open policy)
+ * but historically could NOT read `daily_schedules`. Run
+ * supabase-fix-daily-schedules.sql so the fallback works too.
  */
 function getReader() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key =
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const service = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const key = service || anon
   if (!url || !key) throw new Error('Missing Supabase credentials')
-  return createAdminClient(url, key, { auth: { persistSession: false } })
+  return {
+    client: createAdminClient(url, key, { auth: { persistSession: false } }),
+    usingServiceRole: Boolean(service),
+  }
 }
 
 /** Wall clock in the school's timezone, not the server's UTC. */
@@ -40,14 +50,13 @@ function nowInTz() {
       return acc
     }, {})
 
-  // hourCycle h23 can emit "24" for midnight; normalise it.
   const hour = Number(parts.hour) % 24
   const minute = Number(parts.minute)
   const second = Number(parts.second)
   const pad = (n: number) => String(n).padStart(2, '0')
 
   return {
-    weekday: parts.weekday, // Sun..Sat, matches DAY_NAMES
+    weekday: parts.weekday,
     hour,
     minute,
     second,
@@ -71,15 +80,14 @@ export async function GET(request: Request) {
 
     const clock = nowInTz()
     const dayParam = searchParams.get('day')
-    const today =
-      dayParam && DAY_NAMES.includes(dayParam) ? dayParam : clock.weekday
+    const today = dayParam && DAY_NAMES.includes(dayParam) ? dayParam : clock.weekday
 
-    // Current date in school timezone (YYYY-MM-DD)
-    const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: TZ })
+    const dateStr = schoolDate()
 
-    const supabase = getReader()
+    const { client: supabase, usingServiceRole } = getReader()
+
+    // 1. Weekly master timetable (the "timetable tab" table).
     const { data, error } = await supabase.from('slots').select('*').eq('day', today)
-
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500, headers: noStore })
     }
@@ -89,45 +97,12 @@ export async function GET(request: Request) {
       return acc
     }, {})
 
-    // Merge daily overrides. Prefer the teacherId if sent; otherwise fall back
-    // to the most recently saved daily schedule for today so a single-teacher
-    // setup works without configuring a teacher ID on the device.
-    if (teacherId) {
-      const { data: dailyData } = await supabase
-        .from('daily_schedules')
-        .select('periods')
-        .eq('user_id', teacherId)
-        .eq('date', dateStr)
-        .maybeSingle()
-
-      if (dailyData && dailyData.periods) {
-        for (const p of dailyData.periods as { periodTime: string; subject: string }[]) {
-          if (p.subject) {
-            slots[p.periodTime] = p.subject
-          } else {
-            delete slots[p.periodTime]
-          }
-        }
-      }
-    } else {
-      const { data: dailyList } = await supabase
-        .from('daily_schedules')
-        .select('periods')
-        .eq('date', dateStr)
-        .order('reviewed_at', { ascending: false })
-        .limit(1)
-
-      const dailyData = dailyList && dailyList.length > 0 ? dailyList[0] : null
-      if (dailyData && dailyData.periods) {
-        for (const p of dailyData.periods as { periodTime: string; subject: string }[]) {
-          if (p.subject) {
-            slots[p.periodTime] = p.subject
-          } else {
-            delete slots[p.periodTime]
-          }
-        }
-      }
-    }
+    // 2. Overlay TODAY-ONLY changes from the dashboard popup. This never writes
+    //    back to `slots`, so the weekly timetable stays untouched.
+    const daily = await applyDailyOverrides(supabase, slots, {
+      teacherId,
+      date: dateStr,
+    })
 
     const schedule = periods.map((p) => ({
       time: p.time,
@@ -139,7 +114,7 @@ export async function GET(request: Request) {
       {
         day: today,
         serverDay: clock.weekday,
-        time: clock.time, // always HH:MM:SS, zero padded
+        time: clock.time,
         hour: clock.hour,
         minute: clock.minute,
         second: clock.second,
@@ -150,6 +125,16 @@ export async function GET(request: Request) {
         alarm_message: null,
         updatedAt: new Date().toISOString(),
         periods: schedule,
+        // --- diagnostics: open this URL in a browser to see why an override
+        // --- did or did not reach the device.
+        debug: {
+          date: daily.date,
+          teacherIdSent: teacherId || null,
+          dailyOverrideApplied: daily.applied,
+          dailyOverrideSource: daily.source,
+          dailyOverrideError: daily.error,
+          usingServiceRole,
+        },
       },
       { headers: noStore },
     )
