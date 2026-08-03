@@ -187,7 +187,7 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
                         }}
                         onBlur={() => commitCell(period.time)}
                         onClick={(e) => e.stopPropagation()}
-                        placeholder="Subject"
+                        placeholder="Class"
                         autoFocus
                       />
                     ) : (

@@ -9,7 +9,7 @@ import { useTimetable, DAY_NAMES } from '@/hooks/useTimetable'
 
 export default function Dashboard() {
   const todayName = DAY_NAMES[new Date().getDay()]
-  const dateStr = new Date().toISOString().slice(0, 10)
+  const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
 
   const { dailySubjects, loading, exists, save } = useDailySchedule(dateStr)
   const { timetable, periods } = useTimetable()

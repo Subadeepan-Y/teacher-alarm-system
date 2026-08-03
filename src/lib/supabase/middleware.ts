@@ -27,6 +27,14 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Allow any authenticated user (configure ALLOWED_EMAILS env var to restrict)
+  const allowedEmails = process.env.ALLOWED_EMAILS?.split(',').map(e => e.trim()) || []
+
+  if (user && allowedEmails.length > 0 && !allowedEmails.includes(user.email)) {
+    await supabase.auth.signOut()
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
   if (!user && !request.nextUrl.pathname.startsWith('/login')) {
     return NextResponse.redirect(new URL('/login', request.url))
   }

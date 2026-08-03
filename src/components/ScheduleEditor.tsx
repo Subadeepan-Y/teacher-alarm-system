@@ -5,7 +5,7 @@ import { useTimetable, DAY_NAMES } from '../hooks/useTimetable'
 import DayView from './DayView'
 
 export default function ScheduleEditor() {
-  const { timetable, days, periods, addSlot, editSlot, deleteSlot, addDay, removeDay } = useTimetable()
+  const { timetable, days, periods, addSlot, editSlot, deleteSlot, addDay, removeDay, syncStatus } = useTimetable()
   const [view, setView] = useState<'grid' | 'day'>('grid')
   const [editingCell, setEditingCell] = useState<{ day: string; periodTime: string } | null>(null)
   const [editingValue, setEditingValue] = useState('')
@@ -56,6 +56,23 @@ export default function ScheduleEditor() {
             </button>
           ))}
         </div>
+        <div className="flex items-center gap-2">
+          {syncStatus.state !== 'idle' && (
+            <span className={`text-[11px] ${
+              syncStatus.state === 'saving'
+                ? 'text-zinc-400'
+                : syncStatus.state === 'saved'
+                  ? 'text-green-500'
+                  : syncStatus.state === 'offline'
+                    ? 'text-amber-500'
+                    : 'text-red-500'
+            }`}>
+              {syncStatus.state === 'saving' && 'Saving…'}
+              {syncStatus.state === 'saved' && 'Saved ✓'}
+              {syncStatus.state === 'offline' && 'Offline — will sync later'}
+              {syncStatus.state === 'error' && `Not saved (retrying): ${syncStatus.message}`}
+            </span>
+          )}
         {view === 'grid' && (
           <button
             onClick={() => { setShowNewDay(true); setNewDayName('') }}
@@ -64,6 +81,7 @@ export default function ScheduleEditor() {
             + Day
           </button>
         )}
+        </div>
       </div>
 
       {view === 'day' ? (
@@ -139,7 +157,7 @@ export default function ScheduleEditor() {
                           }}
                           onBlur={() => commitCell(d, period.time)}
                           onClick={(e) => e.stopPropagation()}
-                          placeholder="Subject"
+                          placeholder="Class"
                           autoFocus
                         />
                       ) : (

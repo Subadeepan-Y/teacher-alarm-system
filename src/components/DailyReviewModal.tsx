@@ -35,7 +35,7 @@ export default function DailyReviewModal({ periods, baseSubjects, onConfirm, onS
                     className="flex-1 rounded border border-zinc-800 bg-black/30 px-2.5 py-1.5 text-sm text-white outline-none focus:border-orange-500"
                     value={subjects[p.time] || ''}
                     onChange={(e) => setSubjects((prev) => ({ ...prev, [p.time]: e.target.value }))}
-                    placeholder="Subject"
+                    placeholder="Class"
                   />
                 )}
               </div>

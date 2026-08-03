@@ -95,7 +95,7 @@ export default function DayView() {
                     }}
                     onBlur={() => commit(selectedDay, period.time)}
                     onClick={(e) => e.stopPropagation()}
-                    placeholder="Subject"
+                    placeholder="Class"
                     autoFocus
                   />
                 ) : (

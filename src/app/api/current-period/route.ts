@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { SECONDARY_PERIODS, PRIMARY_PERIODS, DAY_NAMES } from '@/hooks/useTimetable'
+import { SECONDARY_PERIODS, PRIMARY_PERIODS, DAY_NAMES } from '@/lib/periods'
 import { getCurrentPeriodIndex, parseTimeRange } from '@/lib/period-utils'
 
 export async function GET(request: Request) {
