@@ -26,6 +26,16 @@ body {
   background-color: var(--ink);
   color: var(--sea);
 }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
+}
 /* a faint, quiet warm glow at the top of the app shell */
 body::before {
   content: "";
