@@ -89,7 +89,9 @@ export async function GET(request: Request) {
       return acc
     }, {})
 
-    // Merge daily overrides for this teacher if teacherId provided
+    // Merge daily overrides. Prefer the teacherId if sent; otherwise fall back
+    // to the most recently saved daily schedule for today so a single-teacher
+    // setup works without configuring a teacher ID on the device.
     if (teacherId) {
       const { data: dailyData } = await supabase
         .from('daily_schedules')
@@ -98,6 +100,24 @@ export async function GET(request: Request) {
         .eq('date', dateStr)
         .maybeSingle()
 
+      if (dailyData && dailyData.periods) {
+        for (const p of dailyData.periods as { periodTime: string; subject: string }[]) {
+          if (p.subject) {
+            slots[p.periodTime] = p.subject
+          } else {
+            delete slots[p.periodTime]
+          }
+        }
+      }
+    } else {
+      const { data: dailyList } = await supabase
+        .from('daily_schedules')
+        .select('periods')
+        .eq('date', dateStr)
+        .order('reviewed_at', { ascending: false })
+        .limit(1)
+
+      const dailyData = dailyList && dailyList.length > 0 ? dailyList[0] : null
       if (dailyData && dailyData.periods) {
         for (const p of dailyData.periods as { periodTime: string; subject: string }[]) {
           if (p.subject) {
