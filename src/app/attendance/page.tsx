@@ -28,7 +28,7 @@ function resolve(segment: string, boundary: 'start' | 'end') {
 const STATE_META = {
   present: { label: 'On time', tone: 'var(--jade)' },
   late: { label: 'Present · late', tone: 'var(--amber)' },
-  missed: { label: 'Missed', tone: 'var(--ember)' },
+  missed: { label: 'Absent', tone: 'var(--ember)' },
   now: { label: 'Now', tone: 'var(--sea)' },
   scheduled: { label: 'Up next', tone: 'var(--mut)' },
 } as const
@@ -210,7 +210,7 @@ export default function AttendancePage() {
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[10px] text-[var(--mut)]">
           <span><span className="text-[var(--jade)]">■</span> on time</span>
           <span><span className="text-[var(--amber)]">■</span> present-late</span>
-          <span><span className="text-[var(--ember)]">■</span> missed</span>
+          <span><span className="text-[var(--ember)]">■</span> absent</span>
           <span><span>□</span> break / lunch</span>
         </div>
       </section>
@@ -225,7 +225,7 @@ export default function AttendancePage() {
           tone={ontimePct !== null && ontimePct >= 80 ? 'var(--jade)' : ontimePct !== null ? 'var(--amber)' : 'var(--sea)'}
         />
         <Stat label="Present-late" value={String(late)} sub="after 5-minute grace" tone="var(--amber)" />
-        <Stat label="Missed" value={String(missed)} sub="no entry yet" tone="var(--ember)" />
+        <Stat label="Absent" value={String(missed)} sub="no entry" tone="var(--ember)" />
       </section>
 
       {/* Quiet per-class ledger */}
@@ -278,7 +278,7 @@ export default function AttendancePage() {
                   <span className="font-mono text-[11px] text-[var(--mut)]">up next</span>
                 )}
                 {c.status === 'missed' && (
-                  <span className="font-mono text-[11px] text-[var(--ember)]">no entry</span>
+                  <span className="font-mono text-[11px] text-[var(--ember)]">absent</span>
                 )}
 
                 <span

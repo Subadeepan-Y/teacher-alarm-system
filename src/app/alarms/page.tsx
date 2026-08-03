@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
-import { useTimetable, DAY_NAMES } from '@/hooks/useTimetable'
+import { useTimetable } from '@/hooks/useTimetable'
+import { istClock } from '@/lib/ist-time'
+import { parseTimeRange } from '@/lib/period-utils'
 
 export default function AlarmsPage() {
   const { timetable, periods } = useTimetable()
-  const today = DAY_NAMES[new Date().getDay()]
   const [attendance, setAttendance] = useState<Set<string>>(new Set())
+  const [now, setNow] = useState(() => istClock())
 
   useEffect(() => {
     const load = () => {
@@ -22,22 +24,28 @@ export default function AlarmsPage() {
     }
     load()
     const t = setInterval(load, 15000)
-    return () => clearInterval(t)
+    const clock = setInterval(() => setNow(istClock()), 30000)
+    return () => {
+      clearInterval(t)
+      clearInterval(clock)
+    }
   }, [])
 
   function getSubject(periodTime: string) {
+    const today = now.weekday
     return timetable.find((s) => s.day === today && s.periodTime === periodTime)?.subject
   }
 
   return (
     <DashboardLayout>
       <div className="max-w-lg mx-auto space-y-3">
-        <h2 className="ld-num text-lg font-semibold text-[var(--sea)] mb-4">{today} — Attendance</h2>
+        <h2 className="ld-num text-lg font-semibold text-[var(--sea)] mb-4">{now.weekday} — Attendance</h2>
 
         {periods.map((period) => {
           const isFixed = period.type === 'break' || period.type === 'lunch'
           const subject = getSubject(period.time)
           const scanned = attendance.has(period.time)
+          const ended = now.minutes >= parseTimeRange(period.time).end
 
           if (isFixed) return null
 
@@ -56,6 +64,8 @@ export default function AlarmsPage() {
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg>
                     Present
                   </span>
+                ) : ended ? (
+                  <span className="text-[var(--ember)]">Absent</span>
                 ) : (
                   <span className="text-[var(--mut)]">Pending</span>
                 )}
