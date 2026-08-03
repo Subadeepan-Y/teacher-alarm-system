@@ -41,15 +41,15 @@ export default function ScheduleEditor() {
     <div className="space-y-4">
       {/* View toggle */}
       <div className="flex items-center justify-between">
-        <div className="flex gap-1 rounded-lg border border-zinc-800 p-0.5">
+        <div className="flex gap-1 rounded-lg border border-[var(--line)] p-0.5">
           {(['grid', 'day'] as const).map((v) => (
             <button
               key={v}
               onClick={() => setView(v)}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                 view === v
-                  ? 'bg-orange-500/15 text-orange-500'
-                  : 'text-zinc-500 hover:text-zinc-300'
+                  ? 'bg-[var(--amber)]/15 text-[var(--amber)]'
+                  : 'text-[var(--mut)] hover:text-[var(--sea)]'
               }`}
             >
               {v === 'grid' ? 'Grid' : 'Day'}
@@ -58,14 +58,14 @@ export default function ScheduleEditor() {
         </div>
         <div className="flex items-center gap-2">
           {syncStatus.state !== 'idle' && (
-            <span className={`text-[11px] ${
+            <span className={`text-[11px] ld-mono ${
               syncStatus.state === 'saving'
-                ? 'text-zinc-400'
+                ? 'text-[var(--mut)]'
                 : syncStatus.state === 'saved'
-                  ? 'text-green-500'
+                  ? 'text-[var(--jade)]'
                   : syncStatus.state === 'offline'
-                    ? 'text-amber-500'
-                    : 'text-red-500'
+                    ? 'text-[var(--amber)]'
+                    : 'text-[var(--ember)]'
             }`}>
               {syncStatus.state === 'saving' && 'Saving…'}
               {syncStatus.state === 'saved' && 'Saved ✓'}
@@ -76,7 +76,7 @@ export default function ScheduleEditor() {
         {view === 'grid' && (
           <button
             onClick={() => { setShowNewDay(true); setNewDayName('') }}
-            className="text-xs bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded transition-colors cursor-pointer"
+            className="ld-btn text-xs px-3 py-1.5"
           >
             + Day
           </button>
@@ -91,7 +91,7 @@ export default function ScheduleEditor() {
         <table className="w-full text-sm border-collapse min-w-[900px]">
           <thead>
             <tr>
-              <th className="border border-zinc-800 px-3 py-2 text-left font-medium text-zinc-500 text-xs uppercase tracking-wider w-16">
+              <th className="border border-[var(--line)] px-3 py-2 text-left font-medium text-[var(--mut)] text-xs uppercase tracking-wider w-16">
                 Day
               </th>
               {periods.map((period) => {
@@ -99,9 +99,9 @@ export default function ScheduleEditor() {
                 return (
                   <th
                     key={period.time}
-                    className={`border border-zinc-800 px-2 py-2 text-center text-xs font-medium ${
-                      isFixed ? 'text-zinc-600' : 'text-zinc-400'
-                    } ${period.time === '10:40-10:50' || period.time === '12:50-1:20' || period.time === '2:40-2:50' ? 'bg-zinc-900/30' : ''}`}
+                    className={`border border-[var(--line)] px-2 py-2 text-center text-xs font-medium ${
+                      isFixed ? 'text-[var(--mut)]' : 'text-[var(--mut)]'
+                    } ${period.time === '10:40-10:50' || period.time === '12:50-1:20' || period.time === '2:40-2:50' ? 'bg-[var(--panel-2)]/40' : ''}`}
                   >
                     {period.time}
                   </th>
@@ -112,8 +112,8 @@ export default function ScheduleEditor() {
           <tbody>
             {days.map((d) => (
               <tr key={d}>
-                <td className={`border border-zinc-800 px-3 py-2 text-xs font-medium ${
-                  d === todayName ? 'text-orange-500' : 'text-zinc-400'
+                <td className={`border border-[var(--line)] px-3 py-2 text-xs font-medium ${
+                  d === todayName ? 'text-[var(--amber)]' : 'text-[var(--mut)]'
                 }`}>
                   {d}
                 </td>
@@ -127,9 +127,9 @@ export default function ScheduleEditor() {
                     return (
                       <td
                         key={period.time}
-                        className={`border border-zinc-800 px-2 py-3 text-center text-xs italic ${
-                          period.type === 'break' ? 'text-zinc-600' : 'text-zinc-500'
-                        } bg-zinc-900/20`}
+                        className={`border border-[var(--line)] px-2 py-3 text-center text-xs italic ${
+                          period.type === 'break' ? 'text-[var(--mut)]' : 'text-[var(--mut)]'
+                        } bg-[var(--panel-2)]/40`}
                       >
                         {fixedLabel}
                       </td>
@@ -139,7 +139,7 @@ export default function ScheduleEditor() {
                   return (
                     <td
                       key={period.time}
-                      className="border border-zinc-800 px-2 py-2 text-center cursor-pointer hover:bg-zinc-900/50 transition-colors min-w-[80px]"
+                      className="border border-[var(--line)] px-2 py-2 text-center cursor-pointer hover:bg-[var(--panel-2)]/60 transition-colors min-w-[80px]"
                       onClick={() => {
                         setEditingCell({ day: d, periodTime: period.time })
                         setEditingValue(subject || '')
@@ -148,7 +148,7 @@ export default function ScheduleEditor() {
                       {isEditing ? (
                         <input
                           ref={inputRef}
-                          className="w-full rounded border border-zinc-700 bg-zinc-900 px-1.5 py-1 text-xs text-white text-center outline-none focus:border-orange-500"
+                          className="w-full rounded border border-[var(--amber)] bg-[var(--panel-2)] px-1.5 py-1 text-xs text-[var(--sea)] text-center outline-none"
                           value={editingValue}
                           onChange={(e) => setEditingValue(e.target.value)}
                           onKeyDown={(e) => {
@@ -162,7 +162,7 @@ export default function ScheduleEditor() {
                         />
                       ) : (
                         <span className={`text-xs ${
-                          subject ? 'text-white font-medium' : 'text-zinc-700'
+                          subject ? 'text-[var(--sea)] font-medium' : 'text-[var(--mut)]'
                         }`}>
                           {subject || 'Free'}
                         </span>
@@ -179,17 +179,17 @@ export default function ScheduleEditor() {
 
       {showNewDay && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setShowNewDay(false)}>
-          <div className="w-full max-w-xs rounded-lg border border-zinc-700 bg-zinc-900 p-5 shadow-lg" onClick={(e) => e.stopPropagation()}>
+          <div className="ld-card w-full max-w-xs p-5" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-white">New Day</h2>
-              <button onClick={() => setShowNewDay(false)} className="text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer">
+              <h2 className="ld-num text-sm font-semibold text-[var(--sea)]">New Day</h2>
+              <button onClick={() => setShowNewDay(false)} className="text-[var(--mut)] hover:text-[var(--sea)] transition-colors cursor-pointer">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
             <input
-              className="h-9 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 text-sm text-white outline-none focus:border-orange-500 mb-4"
+              className="ld-field mb-4"
               placeholder="e.g. Saturday"
               value={newDayName}
               onChange={(e) => setNewDayName(e.target.value)}
@@ -202,13 +202,13 @@ export default function ScheduleEditor() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowNewDay(false)}
-                className="flex-1 h-9 rounded-lg border border-zinc-700 text-sm font-medium text-zinc-400 hover:bg-zinc-800 transition-colors cursor-pointer"
+                className="ld-ghost flex-1 h-9 text-sm font-medium cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={() => { addDay(newDayName); setShowNewDay(false); setNewDayName('') }}
-                className="flex-1 h-9 rounded-lg bg-orange-500 text-white text-sm font-medium hover:bg-orange-600 transition-colors cursor-pointer"
+                className="ld-btn flex-1 h-9 text-sm font-medium cursor-pointer"
               >
                 Add
               </button>

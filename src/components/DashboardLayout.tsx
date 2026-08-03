@@ -23,13 +23,13 @@ export default function DashboardLayout({ children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   return (
-    <div className="min-h-screen flex bg-black">
+    <div className="min-h-screen flex bg-transparent">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col pb-16 md:pb-0 min-w-0">
-        <header className="border-b border-zinc-800 px-4 md:px-8 py-3 flex items-center gap-3">
+        <header className="border-b border-[var(--line)]/60 px-4 md:px-8 py-3 flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen((v) => !v)}
-            className="shrink-0 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+            className="shrink-0 text-[var(--mut)] hover:text-[var(--sea)] transition-colors cursor-pointer"
             title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,13 +37,11 @@ export default function DashboardLayout({ children }: Props) {
             </svg>
           </button>
           <div className="min-w-0">
-            <h1 className="text-lg md:text-xl font-semibold text-white truncate">{info.title}</h1>
-            <p className="text-xs md:text-sm text-zinc-500 truncate">{info.subtitle}</p>
+            <h1 className="text-lg md:text-xl font-semibold text-[var(--sea)] truncate">{info.title}</h1>
+            <p className="text-xs md:text-sm text-[var(--mut)] truncate">{info.subtitle}</p>
           </div>
         </header>
-        <main className="flex-1 p-4 md:p-8">
-          {children}
-        </main>
+        <main className="flex-1 p-4 md:p-8">{children}</main>
       </div>
       <BottomNav />
     </div>

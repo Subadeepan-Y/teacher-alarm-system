@@ -79,7 +79,7 @@ export default function ProfilePage() {
   if (!loaded) {
     return (
       <DashboardLayout>
-        <div className="text-zinc-500 text-sm">Loading profile...</div>
+        <div className="text-sm text-[var(--mut)]">Loading profile...</div>
       </DashboardLayout>
     )
   }
@@ -88,21 +88,21 @@ export default function ProfilePage() {
     <DashboardLayout>
       <div className="space-y-6 max-w-md">
         <div>
-          <h2 className="text-lg font-semibold text-white mb-3">Teacher Info</h2>
+          <h2 className="ld-num text-lg font-semibold text-[var(--sea)] mb-3">Teacher Info</h2>
           <div className="space-y-3">
             <div>
-              <label className="block text-xs text-zinc-500 mb-1">Name</label>
+              <label className="block text-xs text-[var(--mut)] mb-1">Name</label>
               <input
-                className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white outline-none focus:border-orange-500 transition-colors"
+                className="ld-field"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your name"
               />
             </div>
             <div>
-              <label className="block text-xs text-zinc-500 mb-1">Grades you handle</label>
+              <label className="block text-xs text-[var(--mut)] mb-1">Grades you handle</label>
               <input
-                className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white outline-none focus:border-orange-500 transition-colors"
+                className="ld-field"
                 value={grades}
                 onChange={(e) => setGrades(e.target.value)}
                 placeholder="e.g. X-XII"
@@ -112,15 +112,15 @@ export default function ProfilePage() {
           <button
             onClick={save}
             disabled={saving}
-            className="mt-3 rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-black hover:bg-orange-400 transition-colors cursor-pointer disabled:opacity-50"
+            className="ld-btn mt-3 px-4 py-2 text-sm"
           >
             {saving ? 'Saving...' : saved ? 'Saved!' : 'Save'}
           </button>
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold text-white mb-3">Timetable Structure</h2>
-          <p className="text-sm text-zinc-500 mb-3">Choose the timetable layout that matches your school level.</p>
+          <h2 className="ld-num text-lg font-semibold text-[var(--sea)] mb-3">Timetable Structure</h2>
+          <p className="text-sm text-[var(--mut)] mb-3">Choose the timetable layout that matches your school level.</p>
           <div className="flex flex-col gap-3">
             {options.map((opt) => {
               const active = structure === opt.value
@@ -130,12 +130,12 @@ export default function ProfilePage() {
                   onClick={() => setStructure(opt.value)}
                   className={`text-left rounded-lg border px-4 py-3 transition-colors cursor-pointer ${
                     active
-                      ? 'border-orange-500 bg-orange-500/10'
-                      : 'border-zinc-700 bg-zinc-900 hover:border-zinc-600'
+                      ? 'border-[var(--amber)] bg-[var(--amber)]/10'
+                      : 'border-[var(--line)] bg-[var(--panel)] hover:border-[var(--mut)]'
                   }`}
                 >
-                  <p className={`text-sm font-medium ${active ? 'text-orange-500' : 'text-white'}`}>{opt.label}</p>
-                  <p className="text-xs text-zinc-500 mt-0.5">{opt.desc}</p>
+                  <p className={`text-sm font-medium ${active ? 'text-[var(--amber)]' : 'text-[var(--sea)]'}`}>{opt.label}</p>
+                  <p className="text-xs text-[var(--mut)] mt-0.5">{opt.desc}</p>
                 </button>
               )
             })}

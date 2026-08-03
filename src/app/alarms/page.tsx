@@ -32,7 +32,7 @@ export default function AlarmsPage() {
   return (
     <DashboardLayout>
       <div className="max-w-lg mx-auto space-y-3">
-        <h2 className="text-lg font-semibold text-white mb-4">{today} — Attendance</h2>
+        <h2 className="ld-num text-lg font-semibold text-[var(--sea)] mb-4">{today} — Attendance</h2>
 
         {periods.map((period) => {
           const isFixed = period.type === 'break' || period.type === 'lunch'
@@ -44,20 +44,20 @@ export default function AlarmsPage() {
           return (
             <div
               key={period.time}
-              className="flex items-center rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3"
+              className="flex items-center rounded-lg border border-[var(--line)] bg-[var(--panel)]/50 px-4 py-3"
             >
-              <div className="w-24 shrink-0 text-xs font-mono text-zinc-500">{period.time}</div>
-              <div className="flex-1 text-sm text-white font-medium">{subject || <span className="text-zinc-700 font-normal">Free</span>}</div>
+              <div className="w-24 shrink-0 text-xs ld-mono text-[var(--mut)]">{period.time}</div>
+              <div className="flex-1 text-sm text-[var(--sea)] font-medium">{subject || <span className="text-[var(--mut)] font-normal">Free</span>}</div>
               <div className="shrink-0 text-xs">
                 {!subject ? (
-                  <span className="text-zinc-700">—</span>
+                  <span className="text-[var(--mut)]">—</span>
                 ) : scanned ? (
-                  <span className="text-green-500 flex items-center gap-1">
+                  <span className="text-[var(--jade)] flex items-center gap-1">
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg>
                     Present
                   </span>
                 ) : (
-                  <span className="text-zinc-600">Pending</span>
+                  <span className="text-[var(--mut)]">Pending</span>
                 )}
               </div>
             </div>

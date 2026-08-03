@@ -23,6 +23,44 @@ body {
   font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--ink);
+  color: var(--sea);
+}
+/* a faint, quiet warm glow at the top of the app shell */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 420px;
+  pointer-events: none;
+  background:
+    radial-gradient(600px 320px at 12% -10%, rgba(246, 168, 60, 0.10), transparent 70%),
+    radial-gradient(700px 360px at 92% -12%, rgba(47, 217, 138, 0.07), transparent 70%);
+}
+
+/* Shared component layer — the one visual language across the app. */
+.ld-card   { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+.ld-eyebrow{ font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .26em; color: var(--amber); }
+.ld-num    { font-family: var(--font-ledger); font-weight: 400; }
+.ld-mono   { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+.ld-btn { background: var(--amber); color: var(--ink); font-weight: 600; border-radius: 10px; transition: filter .15s; cursor: pointer; }
+.ld-btn:hover { filter: brightness(1.08); }
+.ld-btn:disabled { opacity: .45; cursor: default; filter: none; }
+.ld-ghost { border: 1px solid var(--line); color: var(--mut); border-radius: 10px; transition: color .15s, border-color .15s; cursor: pointer; }
+.ld-ghost:hover { color: var(--sea); border-color: #2c3b66; }
+
+.ld-field { width:100%; background: var(--panel-2); border:1px solid var(--line); color:var(--sea); border-radius:10px; padding:.5rem .75rem; font-size:.875rem; outline:none; transition: border-color .15s; }
+.ld-field::placeholder { color: var(--mut); }
+.ld-field:focus { border-color: var(--amber); }
+
+.ld-chip { display:inline-flex; align-items:center; border-radius:999px; padding:2px 10px; font-size:11px; font-weight:500; }
+
+:where(a, button, input, [tabindex], textarea) { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
 }
 
 @keyframes ledger-fill {

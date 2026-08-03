@@ -136,9 +136,9 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
   const isFixed = (t: string) => t === 'break' || t === 'lunch'
 
   const alertColors: Record<string, string> = {
-    active: 'border-orange-500/30 bg-orange-500/10 text-orange-400',
-    late: 'border-red-500/30 bg-red-500/10 text-red-400',
-    escalated: 'border-red-600/40 bg-red-600/20 text-red-300',
+    active: 'border-[var(--amber)]/40 bg-[var(--amber)]/10 text-[var(--amber)]',
+    late: 'border-[var(--ember)]/40 bg-[var(--ember)]/10 text-[var(--ember)]',
+    escalated: 'border-[var(--ember)]/60 bg-[var(--ember)]/15 text-[var(--ember)]',
   }
 
   const alertLabels: Record<string, string> = {
@@ -151,14 +151,14 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
     <div>
       {/* Header with clock */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-white">Today — {today}</h2>
-        <div className="font-mono text-xl text-orange-500 tabular-nums">{h12}:{fmt(now.getMinutes())}:{fmt(now.getSeconds())} {ampm}</div>
+        <h2 className="text-lg font-semibold text-[var(--sea)]">Today — {today}</h2>
+        <div className="font-mono text-xl text-[var(--amber)] tabular-nums">{h12}:{fmt(now.getMinutes())}:{fmt(now.getSeconds())} {ampm}</div>
       </div>
 
       {/* Present confirmation (after teacher marks "I have entered") */}
       {present && currentPeriod && currentPeriod.type === 'period' && (
-        <div className="mb-4 rounded-lg border border-green-500/40 bg-green-500/10 px-4 py-2.5 text-sm text-center text-green-400">
-          <span className="font-semibold text-green-300">{currentSubject}</span>
+        <div className="mb-4 rounded-lg border border-[var(--jade)]/40 bg-[var(--jade)]/10 px-4 py-2.5 text-sm text-center text-[var(--jade)]">
+          <span className="font-semibold">{currentSubject}</span>
           &nbsp;&mdash;&nbsp;{currentPeriod.time}
           <span className="block text-xs mt-0.5 opacity-80">Teacher present — attendance recorded</span>
         </div>
@@ -175,13 +175,14 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
             <button
               onClick={markPresent}
               disabled={marking}
-              className="rounded-lg bg-green-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-green-500 transition-colors disabled:opacity-50 cursor-pointer"
+              className="rounded-lg px-4 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer"
+              style={{ background: 'var(--jade)', color: 'var(--ink)' }}
             >
               {marking ? 'Marking...' : "I have entered"}
             </button>
             <button
               onClick={() => setAlertHidden(true)}
-              className="rounded-lg bg-zinc-700 px-4 py-1.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-600 transition-colors cursor-pointer"
+              className="ld-ghost px-4 py-1.5 text-xs font-semibold"
             >
               Dismiss
             </button>
@@ -191,8 +192,8 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
 
       {/* Active period info */}
       {currentSubject && alarmLevel === 'active' && !present && (
-        <div className="mb-4 rounded-lg border border-orange-500/30 bg-orange-500/10 px-4 py-2.5 text-sm text-orange-400 text-center">
-          <span className="font-semibold text-orange-300">{currentSubject}</span>
+        <div className="mb-4 rounded-lg border border-[var(--amber)]/30 bg-[var(--amber)]/10 px-4 py-2.5 text-sm text-[var(--amber)] text-center">
+          <span className="font-semibold">{currentSubject}</span>
           &nbsp;&mdash;&nbsp;{currentPeriod?.time}
         </div>
       )}
@@ -202,15 +203,15 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
         <table className="w-full text-sm border-collapse min-w-[900px]">
           <thead>
             <tr>
-              <th className="border border-zinc-800 px-3 py-2 text-left font-medium text-zinc-500 text-xs uppercase tracking-wider w-16">Day</th>
+              <th className="border border-[var(--line)] px-3 py-2 text-left font-medium text-[var(--mut)] text-xs uppercase tracking-wider w-16">Day</th>
               {periods.map((period) => {
                 const fixed = isFixed(period.type)
                 return (
                   <th
                     key={period.time}
-                    className={`border border-zinc-800 px-2 py-2 text-center text-xs font-medium ${
-                      fixed ? 'text-zinc-600' : 'text-zinc-400'
-                    } ${isCurrentTime(period.time) ? 'bg-orange-500/15' : fixed ? 'bg-zinc-900/30' : ''}`}
+                    className={`border border-[var(--line)] px-2 py-2 text-center text-xs font-medium ${
+                      fixed ? 'text-[var(--mut)]' : 'text-[var(--mut)]'
+                    } ${isCurrentTime(period.time) ? 'bg-[var(--amber)]/15' : fixed ? 'bg-[var(--panel-2)]/40' : ''}`}
                   >
                     {period.time}
                   </th>
@@ -220,8 +221,8 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
           </thead>
           <tbody>
             <tr>
-              <td className={`border border-zinc-800 px-3 py-2 text-xs font-medium ${
-                present ? 'text-green-400' : alarmLevel === 'escalated' ? 'text-red-500' : alarmLevel === 'late' ? 'text-red-400' : 'text-orange-500'
+              <td className={`border border-[var(--line)] px-3 py-2 text-xs font-medium ${
+                present ? 'text-[var(--jade)]' : alarmLevel === 'escalated' ? 'text-[var(--ember)]' : alarmLevel === 'late' ? 'text-[var(--ember)]' : 'text-[var(--amber)]'
               }`}>
                 {today}
               </td>
@@ -235,7 +236,7 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
 
                 if (fixed) {
                   return (
-                    <td key={period.time} className="border border-zinc-800 px-2 py-3 text-center text-xs italic text-zinc-600 bg-zinc-900/20">
+                    <td key={period.time} className="border border-[var(--line)] px-2 py-3 text-center text-xs italic text-[var(--mut)] bg-[var(--panel-2)]/40">
                       {fixedLabel}
                     </td>
                   )
@@ -244,11 +245,11 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
                 return (
                   <td
                     key={period.time}
-                    className={`border border-zinc-800 px-2 py-2 text-center cursor-pointer hover:bg-zinc-900/50 transition-colors min-w-[80px] ${
-                      isPresent ? 'bg-green-500/10' :
-                      active && alarmLevel === 'escalated' ? 'bg-red-600/15' :
-                      active && alarmLevel === 'late' ? 'bg-red-500/10' :
-                      active ? 'bg-orange-500/10' : ''
+                    className={`border border-[var(--line)] px-2 py-2 text-center cursor-pointer hover:bg-[var(--panel-2)]/60 transition-colors min-w-[80px] ${
+                      isPresent ? 'bg-[var(--jade)]/10' :
+                      active && alarmLevel === 'escalated' ? 'bg-[var(--ember)]/15' :
+                      active && alarmLevel === 'late' ? 'bg-[var(--ember)]/10' :
+                      active ? 'bg-[var(--amber)]/10' : ''
                     }`}
                     onClick={() => {
                       setEditingCell({ periodTime: period.time })
@@ -258,7 +259,7 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
                     {editing ? (
                       <input
                         ref={inputRef}
-                        className="w-full rounded border border-zinc-700 bg-zinc-900 px-1.5 py-1 text-xs text-white text-center outline-none focus:border-orange-500"
+                        className="w-full rounded border border-[var(--amber)] bg-[var(--panel-2)] px-1.5 py-1 text-xs text-[var(--sea)] text-center outline-none"
                         value={editingValue}
                         onChange={(e) => setEditingValue(e.target.value)}
                         onKeyDown={(e) => {
@@ -271,9 +272,9 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
                         autoFocus
                       />
                     ) : (
-                      <span className={`text-xs ${subject ? 'text-white font-medium' : 'text-zinc-700'}`}>
+                      <span className={`text-xs ${subject ? 'text-[var(--sea)] font-medium' : 'text-[var(--mut)]'}`}>
                         {subject || 'Free'}
-                        {isPresent && <span className="block text-[10px] text-green-500">Present</span>}
+                        {isPresent && <span className="block text-[10px] text-[var(--jade)]">Present</span>}
                       </span>
                     )}
                   </td>

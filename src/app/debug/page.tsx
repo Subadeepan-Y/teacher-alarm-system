@@ -75,47 +75,47 @@ export default function DebugPage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-100 p-6 font-mono text-sm">
-      <h1 className="text-lg font-bold mb-4">Slots Debug</h1>
+    <main className="min-h-screen bg-[#05070c] text-[var(--sea)] p-6 font-mono text-sm">
+      <h1 className="ld-num text-lg font-bold mb-4 text-[var(--sea)]">Slots Debug</h1>
 
-      <div className="flex gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-6">
         <button
           onClick={testPost}
-          className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded"
+          className="ld-btn px-3 py-1.5"
         >
           Test POST /api/slots
         </button>
         <button
           onClick={testGet}
-          className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white rounded"
+          className="px-3 py-1.5 bg-[var(--panel-2)] border border-[var(--line)] hover:border-[var(--mut)] text-[var(--sea)] rounded cursor-pointer"
         >
           Test GET /api/slots
         </button>
         <button
           onClick={clearPending}
-          className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded"
+          className="px-3 py-1.5 bg-[var(--panel-2)] border border-[var(--line)] hover:border-[var(--mut)] text-[var(--sea)] rounded cursor-pointer"
         >
           Clear pending queue
         </button>
         <button
           onClick={clearCache}
-          className="px-3 py-1.5 bg-red-900 hover:bg-red-800 text-white rounded"
+          className="px-3 py-1.5 bg-[var(--ember)]/15 border border-[var(--ember)]/40 hover:bg-[var(--ember)]/25 text-[var(--ember)] rounded cursor-pointer"
         >
           Clear local cache
         </button>
       </div>
 
       <h2 className="font-bold mb-2">Output</h2>
-      <pre className="bg-zinc-900 border border-zinc-800 rounded p-3 whitespace-pre-wrap min-h-24">
+      <pre className="bg-[var(--panel)] border border-[var(--line)] rounded p-3 whitespace-pre-wrap min-h-24">
         {output || '(nothing yet — click a button)'}
       </pre>
 
       <h2 className="font-bold mt-6 mb-2">localStorage</h2>
-      <div className="bg-zinc-900 border border-zinc-800 rounded p-3 space-y-3">
+      <div className="bg-[var(--panel)] border border-[var(--line)] rounded p-3 space-y-3">
         {Object.entries(storage).map(([name, value]) => (
           <div key={name}>
-            <div className="text-orange-400">{name}</div>
-            <pre className="whitespace-pre-wrap break-all text-zinc-300">
+            <div className="text-[var(--amber)]">{name}</div>
+            <pre className="whitespace-pre-wrap break-all text-[var(--sea)]/80">
               {value === '(not set)' ? value : value}
             </pre>
           </div>

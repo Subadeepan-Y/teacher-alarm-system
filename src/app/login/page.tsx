@@ -42,15 +42,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black px-4">
-      <div className="w-full max-w-sm rounded-lg border border-zinc-800 bg-zinc-900 p-6">
-        <h1 className="text-xl font-semibold text-white text-center mb-6">
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-sm ld-card p-6">
+        <p className="ld-eyebrow text-center mb-1">{mode === 'signin' ? 'Welcome back' : 'Join the register'}</p>
+        <h1 className="text-2xl font-semibold text-[var(--sea)] text-center mb-6" style={{ fontFamily: 'var(--font-ledger)', fontWeight: 400 }}>
           {mode === 'signin' ? 'Sign In' : 'Sign Up'}
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
-            className="h-10 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 text-sm text-white outline-none focus:border-orange-500"
+            className="ld-field h-11"
             type="email"
             placeholder="Email"
             value={email}
@@ -58,18 +59,18 @@ export default function LoginPage() {
             required
           />
           <input
-            className="h-10 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 text-sm text-white outline-none focus:border-orange-500"
+            className="ld-field h-11"
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          {error && <p className="text-xs text-red-400">{error}</p>}
+          {error && <p className="text-xs text-[var(--ember)]">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="h-10 w-full rounded-lg bg-orange-500 text-sm font-medium text-white hover:bg-orange-600 transition-colors disabled:opacity-50 cursor-pointer"
+            className="h-11 w-full ld-btn text-sm"
           >
             {loading
               ? 'Please wait...'
@@ -79,13 +80,13 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="text-xs text-zinc-500 text-center mt-4">
+        <p className="text-xs text-[var(--mut)] text-center mt-4">
           {mode === 'signin' ? (
             <>
               No account?{' '}
               <button
                 onClick={() => { setMode('signup'); setError('') }}
-                className="text-orange-500 hover:underline cursor-pointer"
+                className="text-[var(--amber)] hover:underline cursor-pointer"
               >
                 Sign Up
               </button>
@@ -95,7 +96,7 @@ export default function LoginPage() {
               Already have an account?{' '}
               <button
                 onClick={() => { setMode('signin'); setError('') }}
-                className="text-orange-500 hover:underline cursor-pointer"
+                className="text-[var(--amber)] hover:underline cursor-pointer"
               >
                 Sign In
               </button>

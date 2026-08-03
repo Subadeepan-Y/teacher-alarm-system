@@ -20,7 +20,7 @@ export default function AuthCallbackPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black">
-      <p className="text-zinc-500">Signing in...</p>
+      <p className="text-[var(--mut)]">Signing in...</p>
     </div>
   )
 }

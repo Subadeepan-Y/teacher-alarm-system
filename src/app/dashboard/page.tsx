@@ -38,7 +38,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <DashboardLayout>
-        <div className="text-zinc-500 text-sm">Loading schedule...</div>
+        <div className="text-[var(--mut)] text-sm">Loading schedule...</div>
       </DashboardLayout>
     )
   }

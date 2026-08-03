@@ -73,9 +73,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         open ? 'w-56' : 'w-0'
       }`}
     >
-      <aside className="w-56 bg-zinc-900 text-white flex flex-col h-full border-r border-zinc-800">
-        <div className="px-5 py-5 border-b border-zinc-800">
-          <p className="font-semibold text-sm text-orange-500">Teacher System</p>
+      <aside className="w-56 text-[var(--sea)] flex flex-col h-full border-r border-[var(--line)]/60 bg-[var(--panel)]/60 backdrop-blur">
+        <div className="px-5 py-5 border-b border-[var(--line)]/60">
+          <p className="ld-eyebrow">Teacher System</p>
         </div>
 
         <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto">
@@ -84,27 +84,30 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               key={item.label}
               href={item.path}
               onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+              className={`group flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                 pathname === item.path
-                  ? 'bg-orange-500/10 text-orange-500'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                  ? 'bg-[var(--amber)]/10 text-[var(--amber)]'
+                  : 'text-[var(--mut)] hover:text-[var(--sea)] hover:bg-[var(--panel-2)]'
               }`}
             >
-              {item.icon}
+              <span className="transition-transform group-hover:translate-x-0.5">{item.icon}</span>
               {item.label}
+              {pathname === item.path && (
+                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[var(--amber)]" />
+              )}
             </Link>
           ))}
         </nav>
 
-        <div className="border-t border-zinc-800 px-4 py-3 space-y-2">
+        <div className="border-t border-[var(--line)]/60 px-4 py-3 space-y-2">
           {user && (
-            <p className="text-xs text-zinc-500 truncate" title={user.email}>
+            <p className="ld-mono text-[11px] text-[var(--mut)] truncate" title={user.email}>
               {user.email}
             </p>
           )}
           <button
             onClick={handleSignOut}
-            className="w-full text-left text-xs text-zinc-600 hover:text-zinc-400 transition-colors cursor-pointer"
+            className="w-full text-left text-xs text-[var(--mut)] hover:text-[var(--ember)] transition-colors cursor-pointer"
           >
             Sign out
           </button>
