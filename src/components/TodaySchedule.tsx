@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useTimetable, DAY_NAMES } from '../hooks/useTimetable'
 import { getCurrentPeriodIndex, parseTimeRange } from '@/lib/period-utils'
+import { createClient } from '@/lib/supabase/client'
 
 function fmt(n: number) { return n.toString().padStart(2, '0') }
 
@@ -18,6 +19,29 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
   const [editingValue, setEditingValue] = useState('')
   const [now, setNow] = useState(new Date())
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Periods already marked present today (server-side, shared with the ESP32).
+  const [attendanceSet, setAttendanceSet] = useState<Set<string>>(new Set())
+  const [marking, setMarking] = useState(false)
+  // Alert is dismissed after 10s or when the user closes it.
+  const [alertHidden, setAlertHidden] = useState(false)
+
+  const refreshAttendance = useCallback(() => {
+    fetch(`/api/attendance?day=${today}`, { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setAttendanceSet(new Set(data.map((a: { period_time: string }) => a.period_time)))
+        }
+      })
+      .catch(() => {})
+  }, [today])
+
+  useEffect(() => {
+    refreshAttendance()
+    const t = setInterval(refreshAttendance, 15000)
+    return () => clearInterval(t)
+  }, [refreshAttendance])
 
   useEffect(() => {
     if (editingCell) inputRef.current?.focus()
@@ -38,17 +62,27 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
   const h12 = ((now.getHours() + 11) % 12) + 1
   const ampm = now.getHours() >= 12 ? 'PM' : 'AM'
 
-  // Escalation
-  const minsElapsed = currentPeriod && currentPeriod.type === 'period' && currentSubject
+  const present = currentPeriod ? attendanceSet.has(currentPeriod.time) : false
+
+  // Escalation - skipped entirely once the teacher marks "I have entered".
+  const minsElapsed = currentPeriod && currentPeriod.type === 'period' && currentSubject && !present
     ? now.getHours() * 60 + now.getMinutes() - parseTimeRange(currentPeriod.time).start
     : -1
 
   let alarmLevel: 'none' | 'active' | 'late' | 'escalated' = 'none'
-  if (currentPeriod && currentPeriod.type === 'period' && currentSubject) {
+  if (currentPeriod && currentPeriod.type === 'period' && currentSubject && !present) {
     if (minsElapsed >= 10) alarmLevel = 'escalated'
     else if (minsElapsed >= 5) alarmLevel = 'late'
     else if (minsElapsed >= 0) alarmLevel = 'active'
   }
+
+  // The alert banner lives for 10 seconds max and can be closed manually.
+  useEffect(() => {
+    if (alarmLevel === 'none') return
+    setAlertHidden(false)
+    const t = setTimeout(() => setAlertHidden(true), 10000)
+    return () => clearTimeout(t)
+  }, [alarmLevel])
 
   function getSubject(periodTime: string) {
     if (dailySubjects) return dailySubjects[periodTime] || ''
@@ -71,6 +105,26 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
     }
     setEditingCell(null)
     setEditingValue('')
+  }
+
+  async function markPresent() {
+    if (!currentPeriod || marking) return
+    setMarking(true)
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      const res = await fetch('/api/attendance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: user?.id || 'web', day: today, periodTime: currentPeriod.time }),
+      })
+      if (res.ok) {
+        setAttendanceSet((prev) => new Set(prev).add(currentPeriod.time))
+        setAlertHidden(true)
+      }
+    } catch { /* ignore */ } finally {
+      setMarking(false)
+    }
   }
 
   function isCurrentTime(periodTime: string) {
@@ -101,18 +155,42 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
         <div className="font-mono text-xl text-orange-500 tabular-nums">{h12}:{fmt(now.getMinutes())}:{fmt(now.getSeconds())} {ampm}</div>
       </div>
 
-      {/* Escalation alert */}
-      {alarmLevel !== 'none' && (
+      {/* Present confirmation (after teacher marks "I have entered") */}
+      {present && currentPeriod && currentPeriod.type === 'period' && (
+        <div className="mb-4 rounded-lg border border-green-500/40 bg-green-500/10 px-4 py-2.5 text-sm text-center text-green-400">
+          <span className="font-semibold text-green-300">{currentSubject}</span>
+          &nbsp;&mdash;&nbsp;{currentPeriod.time}
+          <span className="block text-xs mt-0.5 opacity-80">Teacher present — attendance recorded</span>
+        </div>
+      )}
+
+      {/* Escalation alert (auto-hides after 10s, closable) */}
+      {alarmLevel !== 'none' && !alertHidden && (
         <div className={`mb-4 rounded-lg border px-4 py-2.5 text-sm text-center ${alertColors[alarmLevel]}`}>
           <span className="font-semibold">{alertLabels[alarmLevel]}:</span>
           {' '}{currentSubject} &mdash; {currentPeriod?.time}
-          {alarmLevel === 'late' && <span className="block text-xs mt-0.5 opacity-80">Teacher hasn&apos;t scanned RFID yet</span>}
+          {alarmLevel === 'late' && <span className="block text-xs mt-0.5 opacity-80">Teacher hasn&apos;t marked present yet</span>}
           {alarmLevel === 'escalated' && <span className="block text-xs mt-0.5 opacity-80">Office has been notified</span>}
+          <div className="mt-2 flex items-center justify-center gap-2">
+            <button
+              onClick={markPresent}
+              disabled={marking}
+              className="rounded-lg bg-green-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-green-500 transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              {marking ? 'Marking...' : "I have entered"}
+            </button>
+            <button
+              onClick={() => setAlertHidden(true)}
+              className="rounded-lg bg-zinc-700 px-4 py-1.5 text-xs font-semibold text-zinc-300 hover:bg-zinc-600 transition-colors cursor-pointer"
+            >
+              Dismiss
+            </button>
+          </div>
         </div>
       )}
 
       {/* Active period info */}
-      {currentSubject && alarmLevel === 'active' && (
+      {currentSubject && alarmLevel === 'active' && !present && (
         <div className="mb-4 rounded-lg border border-orange-500/30 bg-orange-500/10 px-4 py-2.5 text-sm text-orange-400 text-center">
           <span className="font-semibold text-orange-300">{currentSubject}</span>
           &nbsp;&mdash;&nbsp;{currentPeriod?.time}
@@ -143,7 +221,7 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
           <tbody>
             <tr>
               <td className={`border border-zinc-800 px-3 py-2 text-xs font-medium ${
-                alarmLevel === 'escalated' ? 'text-red-500' : alarmLevel === 'late' ? 'text-red-400' : 'text-orange-500'
+                present ? 'text-green-400' : alarmLevel === 'escalated' ? 'text-red-500' : alarmLevel === 'late' ? 'text-red-400' : 'text-orange-500'
               }`}>
                 {today}
               </td>
@@ -153,6 +231,7 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
                 const subject = getSubject(period.time)
                 const editing = editingCell?.periodTime === period.time
                 const active = isCurrentTime(period.time)
+                const isPresent = attendanceSet.has(period.time)
 
                 if (fixed) {
                   return (
@@ -166,6 +245,7 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
                   <td
                     key={period.time}
                     className={`border border-zinc-800 px-2 py-2 text-center cursor-pointer hover:bg-zinc-900/50 transition-colors min-w-[80px] ${
+                      isPresent ? 'bg-green-500/10' :
                       active && alarmLevel === 'escalated' ? 'bg-red-600/15' :
                       active && alarmLevel === 'late' ? 'bg-red-500/10' :
                       active ? 'bg-orange-500/10' : ''
@@ -193,6 +273,7 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
                     ) : (
                       <span className={`text-xs ${subject ? 'text-white font-medium' : 'text-zinc-700'}`}>
                         {subject || 'Free'}
+                        {isPresent && <span className="block text-[10px] text-green-500">Present</span>}
                       </span>
                     )}
                   </td>

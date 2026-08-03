@@ -97,7 +97,15 @@ export async function GET(request: Request) {
       return acc
     }, {})
 
-    // 2. Overlay TODAY-ONLY changes from the dashboard popup. This never writes
+    // 2. Periods already marked present today, so the ESP can show "Present"
+    //    and skip the alert instead of always flagging late.
+    const { data: attData } = await supabase
+      .from('attendance')
+      .select('period_time')
+      .eq('day', today)
+    const attendance = (attData || []).map((a) => a.period_time)
+
+    // 3. Overlay TODAY-ONLY changes from the dashboard popup. This never writes
     //    back to `slots`, so the weekly timetable stays untouched.
     const daily = await applyDailyOverrides(supabase, slots, {
       teacherId,
@@ -125,6 +133,7 @@ export async function GET(request: Request) {
         alarm_message: null,
         updatedAt: new Date().toISOString(),
         periods: schedule,
+        attendance,
         // --- diagnostics: open this URL in a browser to see why an override
         // --- did or did not reach the device.
         debug: {
