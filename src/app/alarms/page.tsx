@@ -60,14 +60,14 @@ export default function AlarmsPage() {
                 {!subject ? (
                   <span className="text-[var(--mut)]">—</span>
                 ) : scanned ? (
-                  <span className="text-[var(--jade)] flex items-center gap-1">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/></svg>
+                  <span className="ld-pill ld-pill--jade">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/></svg>
                     Present
                   </span>
                 ) : ended ? (
-                  <span className="text-[var(--ember)]">Absent</span>
+                  <span className="ld-pill ld-pill--ember">Absent</span>
                 ) : (
-                  <span className="text-[var(--mut)]">Pending</span>
+                  <span className="ld-pill ld-pill--mut">Pending</span>
                 )}
               </div>
             </div>

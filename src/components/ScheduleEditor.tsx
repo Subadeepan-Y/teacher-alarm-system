@@ -87,7 +87,12 @@ export default function ScheduleEditor() {
       {view === 'day' ? (
         <DayView />
       ) : (
-      <div className="overflow-x-auto">
+      <div className="ld-card overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--line)]/60 px-4 md:px-5 py-3">
+          <h3 className="text-sm font-semibold text-[var(--sea)]">Weekly timetable</h3>
+          <span className="ld-pill ld-pill--mut">Tap a cell to edit</span>
+        </div>
+        <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse min-w-[900px]">
           <thead>
             <tr>
@@ -174,6 +179,7 @@ export default function ScheduleEditor() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
       )}
 

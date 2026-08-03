@@ -84,12 +84,15 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               key={item.label}
               href={item.path}
               onClick={onClose}
-              className={`group flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+              className={`group relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                 pathname === item.path
-                  ? 'bg-[var(--amber)]/10 text-[var(--amber)]'
+                  ? 'bg-gradient-to-r from-[var(--amber)]/15 via-[var(--amber)]/5 to-transparent text-[var(--amber)]'
                   : 'text-[var(--mut)] hover:text-[var(--sea)] hover:bg-[var(--panel-2)]'
               }`}
             >
+              {pathname === item.path && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-[var(--amber)] shadow-[0_0_10px_var(--amber)]" />
+              )}
               <span className="transition-transform group-hover:translate-x-0.5">{item.icon}</span>
               {item.label}
               {pathname === item.path && (
@@ -99,15 +102,23 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           ))}
         </nav>
 
-        <div className="border-t border-[var(--line)]/60 px-4 py-3 space-y-2">
+        <div className="border-t border-[var(--line)]/60 p-3 space-y-2">
           {user && (
-            <p className="ld-mono text-[11px] text-[var(--mut)] truncate" title={user.email}>
-              {user.email}
-            </p>
+            <div className="ld-card flex items-center gap-3 px-3 py-2.5">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--amber)]/30 to-[var(--jade)]/15 text-xs font-bold text-[var(--sea)] ring-1 ring-[var(--line)]">
+                {user.email ? user.email[0].toUpperCase() : 'T'}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-semibold text-[var(--sea)]">Teacher</p>
+                <p className="truncate ld-mono text-[10px] text-[var(--mut)]" title={user.email}>
+                  {user.email}
+                </p>
+              </div>
+            </div>
           )}
           <button
             onClick={handleSignOut}
-            className="w-full text-left text-xs text-[var(--mut)] hover:text-[var(--ember)] transition-colors cursor-pointer"
+            className="w-full text-left text-xs text-[var(--mut)] hover:text-[var(--ember)] transition-colors cursor-pointer px-1"
           >
             Sign out
           </button>

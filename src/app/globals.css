@@ -7,15 +7,15 @@
   --panel-2: #141b30;
   --line: #25304a;
   --sea: #f3f7ff;
-  --mut: #556076;
-  --jade: #2fd98a;
-  --amber: #f6a83c;
-  --ember: #ff5b54;
+  --mut: #94a3b8;
+  --jade: #10b981;
+  --amber: #f59e0b;
+  --ember: #fb7185;
 
   /* Type canon: serif for the register, mono for every clock reading. */
   --font-ledger: Georgia, 'Times New Roman', serif;
-  --font-mono: ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Consolas, monospace;
-  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, 'Cascadia Code', 'SFMono-Regular', Menlo, Consolas, monospace;
+  --font-ui: var(--font-inter), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
 body {
@@ -49,7 +49,14 @@ body::before {
 }
 
 /* Shared component layer — the one visual language across the app. */
-.ld-card   { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+.ld-card   {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0) 45%),
+    var(--panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 12px 32px -18px rgba(0,0,0,0.55);
+}
 .ld-eyebrow{ font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .26em; color: var(--amber); }
 .ld-num    { font-family: var(--font-ledger); font-weight: 400; }
 .ld-mono   { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
@@ -65,6 +72,23 @@ body::before {
 .ld-field:focus { border-color: var(--amber); }
 
 .ld-chip { display:inline-flex; align-items:center; border-radius:999px; padding:2px 10px; font-size:11px; font-weight:500; }
+
+/* Pill badges — soft tinted ground, solid accent text. */
+.ld-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  border-radius: 999px; padding: 2px 9px;
+  font-size: 11px; font-weight: 600; letter-spacing: .01em;
+  white-space: nowrap;
+}
+.ld-pill--jade  { color: var(--jade);  background: color-mix(in srgb, var(--jade) 14%, transparent);  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--jade) 28%, transparent); }
+.ld-pill--amber { color: var(--amber); background: color-mix(in srgb, var(--amber) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--amber) 28%, transparent); }
+.ld-pill--ember { color: var(--ember); background: color-mix(in srgb, var(--ember) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ember) 28%, transparent); }
+.ld-pill--mut   { color: var(--mut);   background: color-mix(in srgb, var(--mut) 12%, transparent);   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mut) 22%, transparent); }
+
+/* Glow ring for the live slot — the teacher's "you are here". */
+.ld-glow {
+  box-shadow: 0 0 0 1px var(--amber), 0 0 20px -4px color-mix(in srgb, var(--amber) 55%, transparent);
+}
 
 :where(a, button, input, [tabindex], textarea) { -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }

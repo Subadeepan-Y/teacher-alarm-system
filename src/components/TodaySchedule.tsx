@@ -76,6 +76,37 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
     else if (minsElapsed >= 0) alarmLevel = 'active'
   }
 
+  // Quick-stats inputs
+  const classCount = periods.filter((p) => p.type === 'period' && getSubject(p.time)).length
+  const nowMin = now.getHours() * 60 + now.getMinutes()
+  const nextUp = periods
+    .filter((p) => p.type === 'period' && getSubject(p.time) && nowMin < parseTimeRange(p.time).start)
+    .sort((a, b) => parseTimeRange(a.time).start - parseTimeRange(b.time).start)[0]
+  const nextLabel = nextUp
+    ? `${nextUp.time} · ${getSubject(nextUp.time)}`
+    : currentSubject
+      ? currentSubject
+      : '—'
+
+  const statusInfo = present
+    ? { label: 'On track', tone: 'var(--jade)' }
+    : alarmLevel === 'escalated'
+      ? { label: 'Missed', tone: 'var(--ember)' }
+      : alarmLevel === 'late'
+        ? { label: 'Late', tone: 'var(--ember)' }
+        : currentPeriod?.type === 'period' && currentSubject
+          ? { label: 'In class', tone: 'var(--amber)' }
+          : nextUp
+            ? { label: 'On track', tone: 'var(--jade)' }
+            : { label: 'Free period', tone: 'var(--mut)' }
+
+  const periodProgress = currentPeriod && currentPeriod.type === 'period'
+    ? Math.max(0, Math.min(100, ((nowMin - parseTimeRange(currentPeriod.time).start) / Math.max(1, parseTimeRange(currentPeriod.time).end - parseTimeRange(currentPeriod.time).start)) * 100))
+    : 0
+  const remainingM = currentPeriod && currentPeriod.type === 'period'
+    ? Math.max(0, parseTimeRange(currentPeriod.time).end - nowMin)
+    : 0
+
   // The alert banner lives for 10 seconds max and can be closed manually.
   useEffect(() => {
     if (alarmLevel === 'none') return
@@ -149,10 +180,48 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
 
   return (
     <div>
-      {/* Header with clock */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-[var(--sea)]">Today — {today}</h2>
-        <div className="font-mono text-xl text-[var(--amber)] tabular-nums">{h12}:{fmt(now.getMinutes())}:{fmt(now.getSeconds())} {ampm}</div>
+      {/* Header: title + digital clock widget */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <div className="min-w-0">
+          <h2 className="text-lg font-semibold text-[var(--sea)]">Today — {today}</h2>
+          <p className="text-xs text-[var(--mut)]">Attendance register · school time (IST)</p>
+        </div>
+        <div className="ld-card flex flex-col gap-1.5 px-4 py-2.5">
+          <div className="font-mono text-2xl leading-none text-[var(--amber)] tabular-nums">
+            {h12}:{fmt(now.getMinutes())}:{fmt(now.getSeconds())} <span className="text-xs text-[var(--mut)]">{ampm}</span>
+          </div>
+          {currentPeriod && currentPeriod.type === 'period' && currentSubject ? (
+            <div className="flex items-center gap-2">
+              <span className="ld-mono text-[10px] uppercase tracking-wider text-[var(--mut)]">{currentPeriod.time}</span>
+              <div className="h-1 w-24 overflow-hidden rounded bg-[var(--panel-2)]">
+                <div className="h-full rounded bg-[var(--amber)]" style={{ width: `${periodProgress}%` }} />
+              </div>
+              <span className="ld-mono text-[10px] text-[var(--mut)]">{remainingM}m left</span>
+            </div>
+          ) : (
+            <span className="text-[10px] uppercase tracking-wider text-[var(--mut)]">
+              {nextUp ? `Next · ${getSubject(nextUp.time)}` : 'No class right now'}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Quick stats */}
+      <div className="grid grid-cols-3 gap-3 mb-5">
+        <div className="ld-card px-4 py-3">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--mut)]">Classes today</p>
+          <p className="mt-0.5 ld-num text-2xl text-[var(--sea)]">{classCount}</p>
+        </div>
+        <div className="ld-card px-4 py-3 min-w-0">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--mut)]">{currentPeriod?.type === 'period' && currentSubject ? 'Now' : 'Next up'}</p>
+          <p className="mt-0.5 truncate text-sm font-semibold text-[var(--sea)]">{nextLabel}</p>
+        </div>
+        <div className="ld-card px-4 py-3">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--mut)]">Status</p>
+          <p className="mt-0.5 ld-pill" style={{ color: statusInfo.tone, background: `color-mix(in srgb, ${statusInfo.tone} 14%, transparent)`, boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${statusInfo.tone} 28%, transparent)` }}>
+            {statusInfo.label}
+          </p>
+        </div>
       </div>
 
       {/* Present confirmation (after teacher marks "I have entered") */}
@@ -198,64 +267,69 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
         </div>
       )}
 
-      {/* Horizontal grid */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm border-collapse min-w-[900px]">
-          <thead>
-            <tr>
-              <th className="border border-[var(--line)] px-3 py-2 text-left font-medium text-[var(--mut)] text-xs uppercase tracking-wider w-16">Day</th>
-              {periods.map((period) => {
-                const fixed = isFixed(period.type)
-                return (
-                  <th
-                    key={period.time}
-                    className={`border border-[var(--line)] px-2 py-2 text-center text-xs font-medium ${
-                      fixed ? 'text-[var(--mut)]' : 'text-[var(--mut)]'
-                    } ${isCurrentTime(period.time) ? 'bg-[var(--amber)]/15' : fixed ? 'bg-[var(--panel-2)]/40' : ''}`}
-                  >
-                    {period.time}
-                  </th>
-                )
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className={`border border-[var(--line)] px-3 py-2 text-xs font-medium ${
-                present ? 'text-[var(--jade)]' : alarmLevel === 'escalated' ? 'text-[var(--ember)]' : alarmLevel === 'late' ? 'text-[var(--ember)]' : 'text-[var(--amber)]'
-              }`}>
-                {today}
-              </td>
-              {periods.map((period) => {
-                const fixed = isFixed(period.type)
-                const fixedLabel = period.type === 'break' ? 'Break' : 'Lunch'
-                const subject = getSubject(period.time)
-                const editing = editingCell?.periodTime === period.time
-                const active = isCurrentTime(period.time)
-                const isPresent = attendanceSet.has(period.time)
-
-                if (fixed) {
+      {/* Horizontal grid — the day register in a glass card */}
+      <div className="ld-card overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--line)]/60 px-4 md:px-5 py-3">
+          <h3 className="text-sm font-semibold text-[var(--sea)]">Today&apos;s timetable</h3>
+          <span className="ld-pill ld-pill--mut">Tap a cell to edit</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse min-w-[900px]">
+            <thead>
+              <tr>
+                <th className="border border-[var(--line)] px-3 py-2 text-left font-medium text-[var(--mut)] text-xs uppercase tracking-wider w-16">Day</th>
+                {periods.map((period) => {
+                  const fixed = isFixed(period.type)
                   return (
-                    <td key={period.time} className="border border-[var(--line)] px-2 py-3 text-center text-xs italic text-[var(--mut)] bg-[var(--panel-2)]/40">
-                      {fixedLabel}
-                    </td>
+                    <th
+                      key={period.time}
+                      className={`border border-[var(--line)] px-2 py-2 text-center text-xs font-medium ${
+                        fixed ? 'text-[var(--mut)]' : 'text-[var(--mut)]'
+                      } ${isCurrentTime(period.time) ? 'bg-[var(--amber)]/15' : fixed ? 'bg-[var(--panel-2)]/40' : ''}`}
+                    >
+                      {period.time}
+                    </th>
                   )
-                }
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className={`border border-[var(--line)] px-3 py-2 text-xs font-medium ${
+                  present ? 'text-[var(--jade)]' : alarmLevel === 'escalated' ? 'text-[var(--ember)]' : alarmLevel === 'late' ? 'text-[var(--ember)]' : 'text-[var(--amber)]'
+                }`}>
+                  {today}
+                </td>
+                {periods.map((period) => {
+                  const fixed = isFixed(period.type)
+                  const fixedLabel = period.type === 'break' ? 'Break' : 'Lunch'
+                  const subject = getSubject(period.time)
+                  const editing = editingCell?.periodTime === period.time
+                  const active = isCurrentTime(period.time)
+                  const isPresent = attendanceSet.has(period.time)
 
-                return (
-                  <td
-                    key={period.time}
-                    className={`border border-[var(--line)] px-2 py-2 text-center cursor-pointer hover:bg-[var(--panel-2)]/60 transition-colors min-w-[80px] ${
-                      isPresent ? 'bg-[var(--jade)]/10' :
-                      active && alarmLevel === 'escalated' ? 'bg-[var(--ember)]/15' :
-                      active && alarmLevel === 'late' ? 'bg-[var(--ember)]/10' :
-                      active ? 'bg-[var(--amber)]/10' : ''
-                    }`}
-                    onClick={() => {
-                      setEditingCell({ periodTime: period.time })
-                      setEditingValue(subject || '')
-                    }}
-                  >
+                  if (fixed) {
+                    return (
+                      <td key={period.time} className={`border border-[var(--line)] px-2 py-3 text-center bg-[var(--panel-2)]/30 ${active ? 'ld-glow' : ''}`}>
+                        <span className="ld-pill ld-pill--mut">{fixedLabel}</span>
+                      </td>
+                    )
+                  }
+
+                  return (
+                    <td
+                      key={period.time}
+                      className={`border border-[var(--line)] px-2 py-2 text-center cursor-pointer hover:bg-[var(--panel-2)]/60 transition-colors min-w-[80px] ${
+                        isPresent ? 'bg-[var(--jade)]/10' :
+                        active && alarmLevel === 'escalated' ? 'bg-[var(--ember)]/15' :
+                        active && alarmLevel === 'late' ? 'bg-[var(--ember)]/10' :
+                        active ? 'bg-[var(--amber)]/10' : ''
+                      } ${active ? 'ld-glow' : ''}`}
+                      onClick={() => {
+                        setEditingCell({ periodTime: period.time })
+                        setEditingValue(subject || '')
+                      }}
+                    >
                     {editing ? (
                       <input
                         ref={inputRef}
@@ -272,9 +346,11 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
                         autoFocus
                       />
                     ) : (
-                      <span className={`text-xs ${subject ? 'text-[var(--sea)] font-medium' : 'text-[var(--mut)]'}`}>
-                        {subject || 'Free'}
-                        {isPresent && <span className="block text-[10px] text-[var(--jade)]">Present</span>}
+                      <span className="flex flex-col items-center gap-1">
+                        <span className={`text-xs ${subject ? 'text-[var(--sea)] font-medium' : 'text-[var(--mut)]/60 italic'}`}>
+                          {subject || 'Free'}
+                        </span>
+                        {isPresent && <span className="ld-pill ld-pill--jade">Present</span>}
                       </span>
                     )}
                   </td>
@@ -282,7 +358,8 @@ export default function TodaySchedule({ dailySubjects, onDailyEdit }: TodaySched
               })}
             </tr>
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
     </div>
   )
