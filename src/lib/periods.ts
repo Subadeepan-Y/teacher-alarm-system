@@ -29,6 +29,7 @@ export const PRIMARY_PERIODS = [
   { time: '2:00-2:10', type: 'break' },
   { time: '2:10-2:50', type: 'period' },
   { time: '2:50-3:30', type: 'period' },
+  { time: '4:00-5:10', type: 'period' },
 ]
 
 export const PERIODS_BY_STRUCTURE: Record<Structure, typeof SECONDARY_PERIODS> = {
