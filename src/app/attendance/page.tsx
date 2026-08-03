@@ -69,6 +69,10 @@ export default function AttendancePage() {
       if (fixed) {
         return { time: p.time, subject: '', fixed: true, start, end, status: 'scheduled' as const }
       }
+      // A free period is never late, absent, or present — it's just free.
+      if (!subject) {
+        return { time: p.time, subject: '', fixed: false, start, end, status: 'scheduled' as const }
+      }
       const rec = byTime.get(p.time)
       if (rec && rec.scanned_at) {
         const { minutes, hhmm } = istTimeOf(rec.scanned_at)
@@ -96,10 +100,11 @@ export default function AttendancePage() {
   }, [rows, periods, timetable, today, now.minutes])
 
   const classes = cell.filter((c) => !c.fixed)
-  const showed = classes.filter((c) => c.status === 'present' || c.status === 'late')
-  const present = classes.filter((c) => c.status === 'present').length
-  const late = classes.filter((c) => c.status === 'late').length
-  const missed = classes.filter((c) => c.status === 'missed').length
+  const classCells = classes.filter((c) => c.subject)
+  const showed = classCells.filter((c) => c.status === 'present' || c.status === 'late')
+  const present = classCells.filter((c) => c.status === 'present').length
+  const late = classCells.filter((c) => c.status === 'late').length
+  const missed = classCells.filter((c) => c.status === 'missed').length
   const ontimePct = showed.length ? Math.round((present / showed.length) * 100) : null
 
   const dayStart = Math.min(...cell.map((c) => c.start))
@@ -217,7 +222,7 @@ export default function AttendancePage() {
 
       {/* Stat cluster — the register totals */}
       <section className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat label="Attended" value={String(showed.length)} sub={`of ${classes.length} classes`} />
+        <Stat label="Attended" value={String(showed.length)} sub={`of ${classCells.length} classes`} />
         <Stat
           label="On time"
           value={ontimePct === null ? '—' : `${ontimePct}%`}
@@ -236,16 +241,18 @@ export default function AttendancePage() {
         <div className="divide-y divide-[var(--line)]">
           {classes.map((c) => {
             const meta = STATE_META[c.status]
+            const isFree = !c.subject
             const lateWidth = c.minsLate && c.minsLate > 0 ? Math.min(100, (c.minsLate / 30) * 100) : 0
             return (
               <div key={c.time} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3.5">
                 <div className="w-32 shrink-0">
-                  <div className="truncate text-sm font-medium text-[var(--paper)]">
-                    {c.subject || 'Free'}
+                  <div className={`truncate text-sm font-medium ${isFree ? 'text-[var(--mut)] italic' : 'text-[var(--paper)]'}`}>
+                    {isFree ? 'Free' : c.subject}
                   </div>
                   <div className="font-mono text-[11px] text-[var(--mut)]">{c.time}</div>
                 </div>
 
+                {!isFree && (
                 <div className="w-16 shrink-0">
                   <div className="font-mono text-xs">
                     {c.status === 'present' || c.status === 'late' ? (
@@ -256,8 +263,9 @@ export default function AttendancePage() {
                   </div>
                   <div className="font-mono text-[10px] text-[var(--mut)]">entered</div>
                 </div>
+                )}
 
-                {c.status === 'late' && (
+                {!isFree && c.status === 'late' && (
                   <div className="flex min-w-28 items-center gap-2">
                     <div className="h-1.5 w-16 shrink-0 overflow-hidden rounded bg-[var(--panel-2)]">
                       <div
@@ -269,24 +277,28 @@ export default function AttendancePage() {
                   </div>
                 )}
 
-                {c.status === 'now' && (
+                {isFree ? (
+                  <span className="font-mono text-[11px] text-[var(--mut)]">free</span>
+                ) : c.status === 'now' ? (
                   <span className="font-mono text-[11px] uppercase tracking-widest text-[var(--sea)]">
                     in session
                   </span>
-                )}
-                {c.status === 'scheduled' && (
+                ) : c.status === 'scheduled' ? (
                   <span className="font-mono text-[11px] text-[var(--mut)]">up next</span>
-                )}
-                {c.status === 'missed' && (
+                ) : c.status === 'missed' ? (
                   <span className="font-mono text-[11px] text-[var(--ember)]">absent</span>
-                )}
+                ) : null}
 
+                {isFree ? (
+                  <span className="ld-pill ld-pill--mut ml-auto">Free</span>
+                ) : (
                 <span
                   className="ml-auto shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium"
                   style={{ color: meta.tone, background: `color-mix(in srgb, ${meta.tone} 14%, transparent)` }}
                 >
                   {meta.label}
                 </span>
+                )}
               </div>
             )
           })}
